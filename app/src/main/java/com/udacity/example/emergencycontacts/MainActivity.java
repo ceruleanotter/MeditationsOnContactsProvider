@@ -44,8 +44,9 @@ public class MainActivity extends AppCompatActivity {
             Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
 
             String[] projection = new String[]{
-                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
-                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                    ContactsContract.CommonDataKinds.Phone.NUMBER,
+                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
+
             };
 
             mCursor = getContentResolver().query(
@@ -56,10 +57,10 @@ public class MainActivity extends AppCompatActivity {
                     null);                        // The sort order for the returned rows
 
             while (mCursor.moveToNext()) {
-                long id = mCursor.getLong(0);
+                String number = mCursor.getString(0);
                 String name = mCursor.getString(1);
 
-                CharSequence relationship = ContactsContract.CommonDataKinds.Relation.getTypeLabel(this.getResources(), getRelationshipType(id), "");
+                //CharSequence relationship = ContactsContract.CommonDataKinds.Relation.getTypeLabel(this.getResources(), getRelationshipType(id), "");
 
 //                switch (relationshipInt) {
 //                    case ContactsContract.CommonDataKinds.Relation.TYPE_MOTHER:
@@ -71,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-                mOutputTextView.setText(mOutputTextView.getText() + "\n" + id + " : " + name + " (" +
-                relationship + ")");
+                mOutputTextView.setText(mOutputTextView.getText() + "\n" + name + " (" +
+                number + ")");
             }
         }
     }
