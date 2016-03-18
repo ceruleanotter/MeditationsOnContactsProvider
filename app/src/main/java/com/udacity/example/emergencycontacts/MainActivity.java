@@ -40,10 +40,12 @@ public class MainActivity extends AppCompatActivity {
         } else {
             // Android version is lesser than 6.0 or the permission is already granted.
 
-            Uri uri = ContactsContract.Contacts.CONTENT_URI;
+
+            Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+
             String[] projection = new String[]{
-                    ContactsContract.Contacts._ID,
-                    ContactsContract.Contacts.DISPLAY_NAME
+                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
+                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
             };
 
             mCursor = getContentResolver().query(
@@ -54,12 +56,63 @@ public class MainActivity extends AppCompatActivity {
                     null);                        // The sort order for the returned rows
 
             while (mCursor.moveToNext()) {
-                String id = mCursor.getString(0);
+                long id = mCursor.getLong(0);
                 String name = mCursor.getString(1);
 
-                mOutputTextView.setText(mOutputTextView.getText() + "\n" + id + " : " + name);
+                CharSequence relationship = ContactsContract.CommonDataKinds.Relation.getTypeLabel(this.getResources(), getRelationshipType(id), "");
+
+//                switch (relationshipInt) {
+//                    case ContactsContract.CommonDataKinds.Relation.TYPE_MOTHER:
+//                        relationship = "Mother";
+//                        break;
+//                    case ContactsContract.CommonDataKinds.Relation.TYPE_FATHER:
+//                }
+
+
+
+
+                mOutputTextView.setText(mOutputTextView.getText() + "\n" + id + " : " + name + " (" +
+                relationship + ")");
             }
         }
+    }
+
+
+    public int getRelationshipType(long contactId) {
+        Uri uri = ContactsContract.Data.CONTENT_URI;
+        String where = String.format(
+                "%s = ? AND %s = ?",
+                ContactsContract.Data.MIMETYPE,
+                ContactsContract.CommonDataKinds.Relation.CONTACT_ID);
+
+        String[] whereParams = new String[] {
+                ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE,
+                Long.toString(contactId),
+        };
+
+        String[] selectColumns = new String[]{
+                ContactsContract.CommonDataKinds.Relation.TYPE,
+                // add additional columns here
+        };
+
+
+        Cursor relationCursor = this.getContentResolver().query(
+                uri,
+                selectColumns,
+                where,
+                whereParams,
+                null);
+
+        int type = -1;
+        try{
+            if (relationCursor.moveToFirst()) {
+                type = relationCursor.getInt(
+                        relationCursor.getColumnIndex(ContactsContract.CommonDataKinds.Relation.TYPE));
+            }
+        }finally{
+            relationCursor.close();
+        }
+        return type;
     }
 
     @Override
