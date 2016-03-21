@@ -18,6 +18,16 @@ public class MainActivity extends AppCompatActivity {
     // Request code for READ_CONTACTS. It can be any number > 0.
     private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
 
+    private static final int[] acceptedRelationships = {
+            ContactsContract.CommonDataKinds.Relation.TYPE_FATHER,
+            ContactsContract.CommonDataKinds.Relation.TYPE_MOTHER,
+            ContactsContract.CommonDataKinds.Relation.TYPE_BROTHER,
+            ContactsContract.CommonDataKinds.Relation.TYPE_RELATIVE,
+            ContactsContract.CommonDataKinds.Relation.TYPE_SISTER,
+            ContactsContract.CommonDataKinds.Relation.TYPE_SPOUSE,
+            ContactsContract.CommonDataKinds.Relation.TYPE_DOMESTIC_PARTNER
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,10 +54,27 @@ public class MainActivity extends AppCompatActivity {
             Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
 
             String[] projection = new String[]{
-                    ContactsContract.CommonDataKinds.Phone.NUMBER,
-                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME
-
+                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
+                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+                    ContactsContract.CommonDataKinds.Phone.NUMBER
             };
+
+//            Uri uri = ContactsContract.Data.CONTENT_URI;
+//
+//            String[] projection = new String[]{
+//                    ContactsContract.CommonDataKinds.Relation.DATA3,
+//                    ContactsContract.CommonDataKinds.Relation.DISPLAY_NAME,
+//                    ContactsContract.CommonDataKinds.Relation.TYPE
+//            };
+
+//            String where = String.format(
+//                    "%s = ?",
+//                    ContactsContract.Data.MIMETYPE);
+//
+//            String[] whereParams = new String[] {
+//                    ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE
+//            };
+
 
             mCursor = getContentResolver().query(
                     uri,   // The content URI of the words table
@@ -56,25 +83,26 @@ public class MainActivity extends AppCompatActivity {
                     null,                     // Selection criteria
                     null);                        // The sort order for the returned rows
 
+            String text = "";
             while (mCursor.moveToNext()) {
-                String number = mCursor.getString(0);
+            //mCursor.moveToNext();
+                int id = mCursor.getInt(0);
                 String name = mCursor.getString(1);
+                String number = mCursor.getString(2);
+                int relationshipInt =  getRelationshipType(id);
 
-                //CharSequence relationship = ContactsContract.CommonDataKinds.Relation.getTypeLabel(this.getResources(), getRelationshipType(id), "");
+                boolean isRelative = false;
+                for (int i : acceptedRelationships) {
+                    if (i == relationshipInt) {
+                        isRelative = true;
+                        break;
+                    }
+                }
+                if (isRelative) text += "\n" + id + " : " + name + " (" + number + ")";
 
-//                switch (relationshipInt) {
-//                    case ContactsContract.CommonDataKinds.Relation.TYPE_MOTHER:
-//                        relationship = "Mother";
-//                        break;
-//                    case ContactsContract.CommonDataKinds.Relation.TYPE_FATHER:
-//                }
-
-
-
-
-                mOutputTextView.setText(mOutputTextView.getText() + "\n" + name + " (" +
-                number + ")");
             }
+            mOutputTextView.setText(text);
+
         }
     }
 
