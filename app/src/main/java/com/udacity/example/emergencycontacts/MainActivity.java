@@ -39,9 +39,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-        /**
-         * Show the contacts in the ListView.
-         */
+    /**
+     * Show the contacts in the ListView.
+     */
     private void showContacts() {
         // Check the SDK version and whether the permission is already granted or not.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
@@ -53,11 +53,13 @@ public class MainActivity extends AppCompatActivity {
             Uri uri = ContactsContract.CommonDataKinds.Contactables.CONTENT_URI;
 
 
-            String[] projection = new String[] {
+            String[] projection = new String[]{
                     ContactsContract.CommonDataKinds.Contactables.DISPLAY_NAME,
                     ContactsContract.CommonDataKinds.Phone.NUMBER,
                     ContactsContract.CommonDataKinds.Email.ADDRESS,
-                    ContactsContract.CommonDataKinds.Relation.TYPE
+                    ContactsContract.CommonDataKinds.Relation.TYPE,
+                    ContactsContract.CommonDataKinds.Contactables.MIMETYPE,
+                    ContactsContract.CommonDataKinds.Contactables.LOOKUP_KEY
             };
 
             // Easy way to limit the query to contacts with phone numbers.
@@ -73,7 +75,33 @@ public class MainActivity extends AppCompatActivity {
                     null,      // selection args - can be provided separately and subbed into selection.
                     sortBy);   // string specifying sort order
 
-            
+            String lookupKeyOld = "";
+            while (mCursor.moveToNext()) {
+                String name = mCursor.getString(0);
+                String number = mCursor.getString(1);
+                String email = mCursor.getString(2);
+                int relationshipInt = mCursor.getInt(3);
+                String mimeType = mCursor.getString(4);
+                String lookupKey = mCursor.getString(5);
+
+                if (!lookupKeyOld.equals(lookupKey)) {
+                    lookupKeyOld = lookupKey;
+                    mOutputTextView.append(name + "\n" );
+                }
+
+                if (mimeType.equals(ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)) {
+                    mOutputTextView.append("\tPhone number: " + number + "\n");
+                }
+
+                if (mimeType.equals(ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE)) {
+                    mOutputTextView.append("\tEmail: " + email + "\n");
+                }
+
+                if (mimeType.equals(ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE)) {
+                    CharSequence relation = ContactsContract.CommonDataKinds.Relation.getTypeLabel(getResources(), relationshipInt, "");
+                    mOutputTextView.append("\tRelationship: " + relation + "\n");
+                }
+            }
         }
     }
 
@@ -85,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
                 ContactsContract.Data.MIMETYPE,
                 ContactsContract.CommonDataKinds.Relation.CONTACT_ID);
 
-        String[] whereParams = new String[] {
+        String[] whereParams = new String[]{
                 ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE,
                 Long.toString(contactId),
         };
@@ -104,12 +132,12 @@ public class MainActivity extends AppCompatActivity {
                 null);
 
         int type = -1;
-        try{
+        try {
             if (relationCursor.moveToFirst()) {
                 type = relationCursor.getInt(
                         relationCursor.getColumnIndex(ContactsContract.CommonDataKinds.Relation.TYPE));
             }
-        }finally{
+        } finally {
             relationCursor.close();
         }
         return type;
