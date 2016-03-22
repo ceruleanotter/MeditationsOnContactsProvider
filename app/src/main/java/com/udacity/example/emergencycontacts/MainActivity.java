@@ -49,60 +49,31 @@ public class MainActivity extends AppCompatActivity {
             //After this point you wait for callback in onRequestPermissionsResult(int, String[], int[]) overriden method
         } else {
             // Android version is lesser than 6.0 or the permission is already granted.
+            //String query = args.getString(QUERY_KEY);
+            Uri uri = ContactsContract.CommonDataKinds.Contactables.CONTENT_URI;
 
 
-            Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-
-            String[] projection = new String[]{
-                    ContactsContract.CommonDataKinds.Phone.CONTACT_ID,
-                    ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-                    ContactsContract.CommonDataKinds.Phone.NUMBER
+            String[] projection = new String[] {
+                    ContactsContract.CommonDataKinds.Contactables.DISPLAY_NAME,
+                    ContactsContract.CommonDataKinds.Phone.NUMBER,
+                    ContactsContract.CommonDataKinds.Email.ADDRESS,
+                    ContactsContract.CommonDataKinds.Relation.TYPE
             };
 
-//            Uri uri = ContactsContract.Data.CONTENT_URI;
-//
-//            String[] projection = new String[]{
-//                    ContactsContract.CommonDataKinds.Relation.DATA3,
-//                    ContactsContract.CommonDataKinds.Relation.DISPLAY_NAME,
-//                    ContactsContract.CommonDataKinds.Relation.TYPE
-//            };
+            // Easy way to limit the query to contacts with phone numbers.
+            String selection = ContactsContract.CommonDataKinds.Contactables.HAS_PHONE_NUMBER + " = " + 1;
 
-//            String where = String.format(
-//                    "%s = ?",
-//                    ContactsContract.Data.MIMETYPE);
-//
-//            String[] whereParams = new String[] {
-//                    ContactsContract.CommonDataKinds.Relation.CONTENT_ITEM_TYPE
-//            };
-
+            // Sort results such that rows for the same contact stay together.
+            String sortBy = ContactsContract.CommonDataKinds.Contactables.LOOKUP_KEY;
 
             mCursor = getContentResolver().query(
-                    uri,   // The content URI of the words table
-                    projection,                        // The columns to return for each row
-                    null,                    // Selection criteria
-                    null,                     // Selection criteria
-                    null);                        // The sort order for the returned rows
+                    uri,       // URI representing the table/resource to be queried
+                    projection,      // projection - the list of columns to return.  Null means "all"
+                    selection, // selection - Which rows to return (condition rows must match)
+                    null,      // selection args - can be provided separately and subbed into selection.
+                    sortBy);   // string specifying sort order
 
-            String text = "";
-            while (mCursor.moveToNext()) {
-            //mCursor.moveToNext();
-                int id = mCursor.getInt(0);
-                String name = mCursor.getString(1);
-                String number = mCursor.getString(2);
-                int relationshipInt =  getRelationshipType(id);
-
-                boolean isRelative = false;
-                for (int i : acceptedRelationships) {
-                    if (i == relationshipInt) {
-                        isRelative = true;
-                        break;
-                    }
-                }
-                if (isRelative) text += "\n" + id + " : " + name + " (" + number + ")";
-
-            }
-            mOutputTextView.setText(text);
-
+            
         }
     }
 
