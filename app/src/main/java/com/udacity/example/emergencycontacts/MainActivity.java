@@ -50,16 +50,16 @@ public class MainActivity extends AppCompatActivity {
         } else {
             // Android version is lesser than 6.0 or the permission is already granted.
             //String query = args.getString(QUERY_KEY);
-            Uri uri = ContactsContract.CommonDataKinds.Contactables.CONTENT_URI;
+            Uri uri = ContactsContract.Data.CONTENT_URI;
 
 
             String[] projection = new String[]{
-                    ContactsContract.CommonDataKinds.Contactables.DISPLAY_NAME,
+                    ContactsContract.Data.DISPLAY_NAME,
                     ContactsContract.CommonDataKinds.Phone.NUMBER,
                     ContactsContract.CommonDataKinds.Email.ADDRESS,
                     ContactsContract.CommonDataKinds.Relation.TYPE,
-                    ContactsContract.CommonDataKinds.Contactables.MIMETYPE,
-                    ContactsContract.CommonDataKinds.Contactables.LOOKUP_KEY
+                    ContactsContract.Data.MIMETYPE,
+                    ContactsContract.Data.LOOKUP_KEY
             };
 
             // Easy way to limit the query to contacts with phone numbers.
@@ -151,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
                 // Permission is granted
                 showContacts();
             } else {
-                Toast.makeText(this, "Until you grant the permission, we canot display the names", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Until you grant the permission, we cannot display the names", Toast.LENGTH_SHORT).show();
             }
         }
     }
